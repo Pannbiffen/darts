@@ -67,7 +67,9 @@ export async function forceStopAndResetAudio() {
 export async function initAudio() {
   cancelAutoCleanup();
   if (!audioCtx) {
-    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    audioCtx = new (
+      window.AudioContext || (window as any).webkitAudioContext
+    )();
     masterGain = audioCtx.createGain();
     masterGain.gain.value = currentVolume;
     masterGain.connect(audioCtx.destination);
@@ -86,7 +88,7 @@ export async function initAudio() {
       navigator.mediaSession.playbackState = "none";
     }
   }
-  
+
   if (audioCtx!.state === "suspended") {
     await audioCtx!.resume();
   }
@@ -176,17 +178,17 @@ export async function playErrorBuzz() {
 
   osc1.type = "sawtooth";
   osc2.type = "square";
-  
+
   osc1.frequency.setValueAtTime(100, now);
   osc2.frequency.setValueAtTime(105, now); // 5Hz detune makes it grumble
 
   osc1.connect(gain);
   osc2.connect(gain);
-  
+
   const filter = audioCtx!.createBiquadFilter();
   filter.type = "lowpass";
   filter.frequency.setValueAtTime(800, now); // keep it muddy
-  
+
   gain.connect(filter);
   filter.connect(masterGain!);
 
@@ -201,7 +203,9 @@ export async function playErrorBuzz() {
 
   activeOscillators.push(osc1, osc2);
   osc1.onended = () => {
-    activeOscillators = activeOscillators.filter((n) => n !== osc1 && n !== osc2);
+    activeOscillators = activeOscillators.filter(
+      (n) => n !== osc1 && n !== osc2,
+    );
   };
 
   scheduleAutoCleanup();

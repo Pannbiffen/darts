@@ -10,13 +10,15 @@ trigger: always_on
 
 ## Core Architecture
 
-- **Match Logic (`src/game.ts` or `src/match.ts`)**:
-  - Manages the state of a darts match (Sets, Legs, Current Player, Remaining Score).
-  - Validates inputs (0-180, bust rules).
-  - Statistics and match history are persisted in `localStorage`.
-- **UI Engine (`src/main.ts` & `src/style.css`)**:
+- **Match Logic (`src/match.ts` & `src/clock_match.ts`)**:
+  - `match.ts` manages the state of a 501 darts match (Sets, Legs, Current Player, Remaining Score). Validates inputs (0-180, bust rules).
+  - `clock_match.ts` manages the "Around the Clock" solo training mode (target progression, set tracking, undo stack).
+- **Statistics (`src/stats.ts`)**:
+  - Persists lifetime stats (matches played, win %, 180s, highest checkout, ATC personal best, ATC history) in `localStorage`.
+- **UI Engine (`src/main.ts`, `src/ui.ts` & `src/style.css`)**:
   - High-performance dark mode with glassmorphism inherited from Pitchle.
   - Responsive design targeting everything down to 420px width for mobile dartboard-side usage.
+  - `ui.ts` renders the scoreboard and numpad for both 501 and ATC modes.
 - **Audio System (`src/audio.ts`)**:
   - Provides instant, non-intrusive feedback for inputs (e.g., a subtle click for number entry, a bright chime for hitting a checkout, an error buzz for invalid entries/busts).
 
@@ -28,7 +30,7 @@ trigger: always_on
    - The UI should never shift unexpectedly when a turn changes; use stable layout techniques.
    - Modals and settings must use the established Pitchle overlay style and glassmorphism.
 4. **Testing**: Ask the developer to test new features, particularly touch-input responsiveness on an actual mobile device.
-5. **Persistence**: User statistics (total matches played, win %, 180s hit, highest checkout) must be stored in `localStorage` and synchronized.
+5. **Persistence**: User statistics (total matches played, win %, 180s hit, highest checkout, ATC personal best & history) must be stored in `localStorage` and synchronized.
 6. **Function Comments**: Use inline comments for function arguments (e.g., `/* isLoad= */ true`) to improve readability and searchability.
 7. **Hover Styles**: All CSS `:hover` rules MUST be wrapped in `@media (hover: hover) { ... }` to prevent "sticky hover" on touch devices. The `:active` pseudo-class does NOT need wrapping.
 

@@ -2,13 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <meta name="theme-color" content="#0f172a" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
@@ -107,6 +107,10 @@
         
         <div id="score-input-display"></div>
         <div id="numpad-container"></div>
+
+        <!-- Around the Clock Specific Containers (Hidden by default until a mode selector is built later) -->
+        <div id="clock-scoreboard-container" class="hidden"></div>
+        <div id="clock-numpad-container" class="hidden"></div>
         
         <!-- How to Play Modal (reused from Pitchle, cleaned out) -->
         <div id="how-to-play-modal" class="modal-overlay hidden">
@@ -138,15 +142,11 @@
         <div id="stats-modal" class="modal-overlay hidden">
           <div class="modal-content glass-panel" style="position: relative">
             <button class="close-modal icon-only">✕</button>
-            <h2>Statistics</h2>
+            <h2>Lifetime Stats</h2>
             <div class="modal-body">
               <div
                 id="global-stats-container"
-                style="
-                  display: flex;
-                  justify-content: space-around;
-                  margin: 1.5rem 0;
-                "
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;"
               >
                 <div class="stat-item">
                   <div id="stat-played" class="stat-val">0</div>
@@ -155,6 +155,14 @@
                 <div class="stat-item">
                   <div id="stat-winpct" class="stat-val">0</div>
                   <div class="stat-label">Win %</div>
+                </div>
+                <div class="stat-item">
+                  <div id="stat-180" class="stat-val">0</div>
+                  <div class="stat-label">Total 180s</div>
+                </div>
+                <div class="stat-item">
+                  <div id="stat-high" class="stat-val">0</div>
+                  <div class="stat-label">High Checkout</div>
                 </div>
               </div>
             </div>

@@ -1,3 +1,5 @@
+import { recordMatchResult, recordThrowStats } from "./stats";
+
 export type MatchStatus = "SETUP" | "PLAYING" | "WON" | "ABANDONED";
 
 export interface Throw {
@@ -52,8 +54,8 @@ let state: MatchState = {
 const genId = () => Math.random().toString(36).substring(2, 9);
 
 export function initMatch(config: MatchConfig, playerNames: string[]) {
-  const players: Player[] = playerNames.map((name) => ({
-    id: genId(),
+  const players: Player[] = playerNames.map((name, idx) => ({
+    id: idx === 0 ? "local_user" : genId(),
     name,
     score: config.startingScore,
     legsWon: 0,
@@ -147,8 +149,12 @@ export function submitScore(score: number): ScoreResult {
 
   if (!isBust) {
     player.score = remainingParams;
+    // Only track local user stats
+    if (player.id === "local_user") {
+      recordThrowStats(score, isGameShot);
+    }
   }
-  
+
   player.currentAverage = calculateAverage(player.throwHistory);
 
   if (isGameShot) {
@@ -167,8 +173,6 @@ export function submitScore(score: number): ScoreResult {
 export function undoLastThrow() {
   if (state.status !== "PLAYING") return false;
 
-  // We need to find the player who threw last.
-  // This is the player *before* the current player.
   let prevPlayerIndex = state.currentPlayerIndex - 1;
   if (prevPlayerIndex < 0) prevPlayerIndex = state.players.length - 1;
 
@@ -179,23 +183,22 @@ export function undoLastThrow() {
   }
 
   const lastThrow = prevPlayer.throwHistory.pop()!;
-  
+
   if (!lastThrow.isBust) {
-    // Restore the score
     prevPlayer.score += lastThrow.score;
   }
-  
+
   prevPlayer.currentAverage = calculateAverage(prevPlayer.throwHistory);
 
-  // Revert back to that player's turn
   state.currentPlayerIndex = prevPlayerIndex;
-  
+
   saveState();
   return true;
 }
 
 function cyclePlayer() {
-  state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+  state.currentPlayerIndex =
+    (state.currentPlayerIndex + 1) % state.players.length;
 }
 
 function handleLegWin(winner: Player) {
@@ -204,36 +207,41 @@ function handleLegWin(winner: Player) {
   if (winner.legsWon >= state.config.legsToWinSet) {
     handleSetWin(winner);
   } else {
-    // Reset round for next leg
     resetLeg();
   }
 }
 
 function handleSetWin(winner: Player) {
   winner.setsWon += 1;
-  winner.legsWon = 0; // Reset legs
-  
-  // Also reset legs for other players
-  state.players.forEach(p => {
+  winner.legsWon = 0;
+
+  state.players.forEach((p) => {
     if (p.id !== winner.id) p.legsWon = 0;
   });
 
   if (winner.setsWon >= state.config.setsToWin) {
     state.status = "WON";
     state.winnerId = winner.id;
-    // Persist final match to stats here later
+    // Record match to overall stats database
+    const localPlayerIndex = state.players.findIndex(
+      (p) => p.id === "local_user",
+    );
+    if (localPlayerIndex !== -1) {
+      const isWin = state.winnerId === "local_user";
+      recordMatchResult(isWin);
+    }
   } else {
     resetLeg();
   }
 }
 
 function resetLeg() {
-  state.players.forEach(p => {
+  state.players.forEach((p) => {
     p.score = state.config.startingScore;
     // We optionally keep throwHistory across legs to maintain rolling average,
     // or we could separate history array by leg. For simplicity we keep it rolling.
   });
-  
+
   // Usually the player who threw second in the previous leg goes first in the new leg
   // For simplicity, we just leave it at the next player.
   cyclePlayer();
