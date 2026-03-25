@@ -2,7 +2,6 @@ import "./style.css";
 import { registerSW } from "virtual:pwa-register";
 import { playClick, playErrorBuzz, playSuccessChime } from "./audio";
 import {
-  initMatch,
   submitScore,
   undoLastThrow,
   getState,
