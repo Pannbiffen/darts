@@ -74,15 +74,7 @@ export async function initAudio() {
     masterGain.gain.value = currentVolume;
     masterGain.connect(audioCtx.destination);
 
-    // Bypass iOS silent switch
-    if ("audioSession" in navigator) {
-      try {
-        // @ts-ignore
-        (navigator as any).audioSession.type = "playback";
-      } catch (e) {
-        console.warn("Failed to set audio session type:", e);
-      }
-    }
+
 
     if ("mediaSession" in navigator) {
       navigator.mediaSession.playbackState = "none";
