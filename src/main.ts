@@ -129,27 +129,73 @@ document.querySelectorAll(".modal-overlay").forEach((overlay) => {
 });
 
 // Settings Confirm Reset Actions
+const resetAchievementsBtn = document.getElementById("resetAchievementsBtn");
 const resetProgressLink = document.getElementById("resetProgressLink");
 const confirmModal = document.getElementById("confirm-modal");
 const cancelResetBtn = document.getElementById("cancelResetBtn");
 const confirmResetBtn = document.getElementById("confirmResetBtn");
 const settingsModal = document.getElementById("settings-modal");
 
-if (resetProgressLink && confirmModal && cancelResetBtn && confirmResetBtn) {
-  resetProgressLink.addEventListener("click", (e) => {
-    e.preventDefault();
+let resetType: "STATS" | "ALL" | null = null;
+
+function showConfirmModal(type: "STATS" | "ALL") {
+  resetType = type;
+  if (confirmModal) {
+    const title = confirmModal.querySelector("h3");
+    const body = confirmModal.querySelector("p");
+    const actionBtn = confirmModal.querySelector("#confirmResetBtn");
+
+    if (title && body && actionBtn) {
+      if (type === "STATS") {
+        title.textContent = "Reset Statistics?";
+        body.textContent =
+          "This will permanently wipe your lifetime statistics and best scores. This cannot be undone.";
+        actionBtn.textContent = "Reset Stats";
+      } else {
+        title.textContent = "Reset All Game Data?";
+        body.textContent =
+          "This will permanently wipe all matches, statistics, and settings. This cannot be undone.";
+        actionBtn.textContent = "Delete All";
+      }
+    }
+
     if (settingsModal) settingsModal.classList.add("hidden");
     confirmModal.classList.remove("hidden");
-  });
+  }
+}
 
+if (resetAchievementsBtn) {
+  resetAchievementsBtn.addEventListener("click", () => {
+    playClick();
+    showConfirmModal("STATS");
+  });
+}
+
+if (resetProgressLink) {
+  resetProgressLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    playClick();
+    showConfirmModal("ALL");
+  });
+}
+
+if (cancelResetBtn) {
   cancelResetBtn.addEventListener("click", () => {
-    confirmModal.classList.add("hidden");
+    playClick();
+    if (confirmModal) confirmModal.classList.add("hidden");
+    resetType = null;
   });
+}
 
+if (confirmResetBtn) {
   confirmResetBtn.addEventListener("click", () => {
-    // Wipe local storage when implemented
-    localStorage.removeItem("darts_stats");
-    localStorage.removeItem("darts_state");
+    if (resetType === "ALL") {
+      localStorage.removeItem("darts_lifetime_stats");
+      localStorage.removeItem("darts_state");
+      localStorage.removeItem("darts_clock_state");
+    } else if (resetType === "STATS") {
+      localStorage.removeItem("darts_lifetime_stats");
+    }
     window.location.reload();
   });
 }
