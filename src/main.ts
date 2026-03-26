@@ -18,6 +18,9 @@ import { getStats, saveStats } from "./stats";
 // Register the PWA service worker for offline support and auto-updates
 registerSW({ immediate: true });
 
+// Enable :active pseudo-class on iOS Safari
+document.body.addEventListener("touchstart", () => {}, { passive: true });
+
 // --- Modal System ---
 const modalButtons = [
   { btnId: "howToPlayBtn", modalId: "how-to-play-modal" },
