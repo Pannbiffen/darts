@@ -358,7 +358,11 @@ import {
   getClockState,
   loadCurrentClockMatch,
 } from "./clock_match";
-import { renderClockScoreboard, initClockNumpad } from "./ui";
+import {
+  renderClockScoreboard,
+  initClockNumpad,
+  updateClockActions,
+} from "./ui";
 
 function updateClockUI() {
   const state = getClockState();
@@ -368,6 +372,8 @@ function updateClockUI() {
     createToast("🎯", "WINNER", "You finished the clock!");
     playSuccessChime();
   }
+
+  updateClockActions(state);
 }
 
 function handleClockHit(mult: 1 | 2 | 3) {
@@ -390,7 +396,17 @@ function handleClockUndo() {
   }
 }
 
-initClockNumpad(handleClockHit, handleClockMiss, handleClockUndo);
+function handleClockRestart() {
+  initClockMatch();
+  updateClockUI();
+}
+
+initClockNumpad(
+  handleClockHit,
+  handleClockMiss,
+  handleClockUndo,
+  handleClockRestart,
+);
 
 // --- Initialization ---
 

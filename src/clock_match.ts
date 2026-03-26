@@ -96,14 +96,16 @@ export function submitClockHit(multiplier: 1 | 2 | 3): ClockResult {
   pushUndoContext();
 
   state.currentTarget += multiplier;
-  advanceDart();
 
   if (state.currentTarget > 20) {
     state.currentTarget = 20; // Cap it so we don't display "Target: 22"
+    // Just increment the dart count for this set, don't advance the set itself
+    state.dartsThrownInSet += 1;
     handleClockWin();
     return "GAME_SHOT";
   }
 
+  advanceDart();
   saveClockState();
   return "HIT";
 }

@@ -152,19 +152,21 @@ export function initClockNumpad(
   onHit: (mult: 1 | 2 | 3) => void,
   onMiss: (allThree: boolean) => void,
   onUndo: () => void,
+  onRestart: () => void,
 ) {
   const container = document.getElementById("clock-numpad-container");
   if (!container) return;
 
   container.innerHTML = `
-    <div class="clock-actions">
-      <button id="btn-treble" class="action-btn r-legendary">Treble (Skip 2)</button>
-      <button id="btn-double" class="action-btn r-epic">Double (Skip 1)</button>
+    <div class="clock-actions-grid">
       <button id="btn-single" class="action-btn r-rare">Single</button>
-      <button id="btn-miss" class="action-btn r-uncommon">Miss (1 Dart)</button>
-      <button id="btn-miss-all" class="action-btn r-warning">Miss All 3</button>
+      <button id="btn-miss" class="action-btn r-uncommon">Miss 1</button>
+      <button id="btn-double" class="action-btn r-epic">Double</button>
+      <button id="btn-miss-all" class="action-btn r-warning">Miss 3</button>
+      <button id="btn-treble" class="action-btn r-legendary">Treble</button>
       <button id="btn-undo" class="action-btn r-danger">Undo</button>
     </div>
+    <button id="btn-restart-clock" class="action-btn r-primary hidden" style="margin-top: 1rem;">Start New Game</button>
   `;
 
   document.getElementById("btn-single")!.onclick = () => {
@@ -191,4 +193,18 @@ export function initClockNumpad(
     playClick();
     onUndo();
   };
+  document.getElementById("btn-restart-clock")!.onclick = () => {
+    playClick();
+    onRestart();
+  };
+}
+
+export function updateClockActions(state: ClockState) {
+  const btn = document.getElementById("btn-restart-clock");
+  if (!btn) return;
+  if (state.status === "WON") {
+    btn.classList.remove("hidden");
+  } else {
+    btn.classList.add("hidden");
+  }
 }
