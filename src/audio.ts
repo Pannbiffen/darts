@@ -5,6 +5,7 @@ let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 
 let currentVolume = 0.5;
+let muteEnabled = true;
 let autoCleanupTimer: number | null = null;
 const AUTO_CLEANUP_DELAY_MS = 3000;
 
@@ -19,6 +20,13 @@ export function setVolume(v: number) {
 
 export function getVolume() {
   return currentVolume;
+}
+
+export function setIsMuteEnabled(enabled: boolean) {
+  muteEnabled = enabled;
+  if (enabled) {
+    forceStopAndResetAudio();
+  }
 }
 
 function cancelAutoCleanup() {
@@ -74,8 +82,6 @@ export async function initAudio() {
     masterGain.gain.value = currentVolume;
     masterGain.connect(audioCtx.destination);
 
-
-
     if ("mediaSession" in navigator) {
       navigator.mediaSession.playbackState = "none";
     }
@@ -87,7 +93,7 @@ export async function initAudio() {
 }
 
 export async function playClick() {
-  if (currentVolume <= 0) return;
+  if (muteEnabled || currentVolume <= 0) return;
   await initAudio();
   const now = audioCtx!.currentTime;
 
@@ -120,7 +126,7 @@ export async function playClick() {
 }
 
 export async function playSuccessChime() {
-  if (currentVolume <= 0) return;
+  if (muteEnabled || currentVolume <= 0) return;
   await initAudio();
   const now = audioCtx!.currentTime;
   const duration = 1.0;
@@ -158,7 +164,7 @@ export async function playSuccessChime() {
 }
 
 export async function playErrorBuzz() {
-  if (currentVolume <= 0) return;
+  if (muteEnabled || currentVolume <= 0) return;
   await initAudio();
   const now = audioCtx!.currentTime;
   const duration = 0.3;

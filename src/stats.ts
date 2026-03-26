@@ -10,6 +10,7 @@ export interface DartsStats {
   highestCheckout: number;
   bestAtcSets: number | null;
   atcHistory: AtcGameRecord[];
+  isMuteEnabled: boolean;
 }
 
 const STATS_KEY = "darts_lifetime_stats";
@@ -21,6 +22,7 @@ const defaultStats: DartsStats = {
   highestCheckout: 0,
   bestAtcSets: null,
   atcHistory: [],
+  isMuteEnabled: true,
 };
 
 export function getStats(): DartsStats {

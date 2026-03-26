@@ -32,11 +32,7 @@
         <div class="header-actions-container">
           <div class="header-actions">
             <!-- Reuse Pitchle icons for now -->
-            <button
-              id="howToPlayBtn"
-              class="pill-btn icon-only"
-              title="Rules"
-            >
+            <button id="howToPlayBtn" class="pill-btn icon-only" title="Rules">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -101,17 +97,25 @@
       <main>
         <div id="game-message"></div>
         <div id="scoreboard-container">
-           <!-- Dynamic Scoreboard will go here -->
-           <h2 style="text-align: center; color: var(--text-secondary); margin-top: 2rem;">Match Ready</h2>
+          <!-- Dynamic Scoreboard will go here -->
+          <h2
+            style="
+              text-align: center;
+              color: var(--text-secondary);
+              margin-top: 2rem;
+            "
+          >
+            Match Ready
+          </h2>
         </div>
-        
+
         <div id="score-input-display"></div>
         <div id="numpad-container"></div>
 
         <!-- Around the Clock Specific Containers (Hidden by default until a mode selector is built later) -->
         <div id="clock-scoreboard-container" class="hidden"></div>
         <div id="clock-numpad-container" class="hidden"></div>
-        
+
         <!-- How to Play Modal (reused from Pitchle, cleaned out) -->
         <div id="how-to-play-modal" class="modal-overlay hidden">
           <div
@@ -126,7 +130,7 @@
               <p style="margin-bottom: 1rem">
                 Welcome to Darts! Select game mode below.
               </p>
-              
+
               <button
                 id="startGameBtn"
                 class="pill-btn primary"
@@ -146,7 +150,12 @@
             <div class="modal-body">
               <div
                 id="global-stats-container"
-                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;"
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 1rem;
+                  margin: 1.5rem 0;
+                "
               >
                 <div class="stat-item">
                   <div id="stat-played" class="stat-val">0</div>
@@ -179,35 +188,91 @@
             <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem">Settings</h2>
 
             <div class="modal-body">
-               <p>Match configurations will go here.</p>
-               
-               <div style="margin-top: 2rem;">
-                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Darts Tracker</p>
-                <div style="display: flex; gap: 1rem;">
-                  <button id="resetAchievementsBtn" class="pill-btn secondary" style="flex: 1; font-size: 0.8rem;">Reset Stats</button>
-                </div>
-                <div style="margin-top: 1rem; text-align: center;">
-                  <a href="#" id="resetProgressLink" style="font-size: 0.8rem; color: #ef4444; opacity: 0.7; text-decoration: underline;">Hard Reset App</a>
-                </div>
+              <div class="settings-row">
+                <span>Mute All Sounds</span>
+                <label class="switch">
+                  <input type="checkbox" id="muteToggle" checked />
+                  <span class="slider"></span>
+                </label>
               </div>
 
+              <div style="margin-top: 2rem">
+                <p
+                  style="
+                    font-size: 0.8rem;
+                    color: var(--text-secondary);
+                    margin-bottom: 0.5rem;
+                  "
+                >
+                  Darts Tracker
+                </p>
+                <div style="display: flex; gap: 1rem">
+                  <button
+                    id="resetAchievementsBtn"
+                    class="pill-btn secondary"
+                    style="flex: 1; font-size: 0.8rem"
+                  >
+                    Reset Stats
+                  </button>
+                </div>
+                <div style="margin-top: 1rem; text-align: center">
+                  <a
+                    href="#"
+                    id="resetProgressLink"
+                    style="
+                      font-size: 0.8rem;
+                      color: #ef4444;
+                      opacity: 0.7;
+                      text-decoration: underline;
+                    "
+                    >Hard Reset App</a
+                  >
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Confirm Reset Modal -->
-        <div id="confirm-modal" class="modal-overlay hidden" style="z-index: 2000;">
-          <div class="modal-content glass-panel" style="max-width: 320px; text-align: center;">
-            <div style="font-size: 2.5rem; margin-bottom: 1rem;">⚠️</div>
-            <h3 style="margin-bottom: 1rem;">Are you sure?</h3>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">This will permanently wipe all matches and statistics. This cannot be undone.</p>
-            <div style="display: flex; gap: 0.5rem; justify-content: center;">
-              <button id="cancelResetBtn" class="pill-btn secondary" style="flex: 1;">Cancel</button>
-              <button id="confirmResetBtn" class="pill-btn primary" style="flex: 1; background: #ef4444; color: white;">Delete All</button>
+        <div
+          id="confirm-modal"
+          class="modal-overlay hidden"
+          style="z-index: 2000"
+        >
+          <div
+            class="modal-content glass-panel"
+            style="max-width: 320px; text-align: center"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 1rem">⚠️</div>
+            <h3 style="margin-bottom: 1rem">Are you sure?</h3>
+            <p
+              style="
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+                margin-bottom: 1.5rem;
+              "
+            >
+              This will permanently wipe all matches and statistics. This cannot
+              be undone.
+            </p>
+            <div style="display: flex; gap: 0.5rem; justify-content: center">
+              <button
+                id="cancelResetBtn"
+                class="pill-btn secondary"
+                style="flex: 1"
+              >
+                Cancel
+              </button>
+              <button
+                id="confirmResetBtn"
+                class="pill-btn primary"
+                style="flex: 1; background: #ef4444; color: white"
+              >
+                Delete All
+              </button>
             </div>
           </div>
         </div>
-
       </main>
     </div>
     <script type="module" src="/src/main.ts"></script>

@@ -30,7 +30,7 @@ trigger: always_on
    - The UI should never shift unexpectedly when a turn changes; use stable layout techniques.
    - Modals and settings must use the established Pitchle overlay style and glassmorphism.
 4. **Testing**: Ask the developer to test new features, particularly touch-input responsiveness on an actual mobile device.
-5. **Persistence**: User statistics (total matches played, win %, 180s hit, highest checkout, ATC personal best & history) must be stored in `localStorage` and synchronized.
+5. **Persistence**: User statistics and settings (total matches played, win %, 180s hit, highest checkout, ATC personal best & history, mute state) must be stored in `localStorage` and synchronized.
 6. **Function Comments**: Use inline comments for function arguments (e.g., `/* isLoad= */ true`) to improve readability and searchability.
 7. **Hover Styles**: All CSS `:hover` rules MUST be wrapped in `@media (hover: hover) { ... }` to prevent "sticky hover" on touch devices. The `:active` pseudo-class does NOT need wrapping.
 

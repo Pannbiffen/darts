@@ -1,6 +1,11 @@
 import "./style.css";
 import { registerSW } from "virtual:pwa-register";
-import { playClick, playErrorBuzz, playSuccessChime } from "./audio";
+import {
+  playClick,
+  playErrorBuzz,
+  playSuccessChime,
+  setIsMuteEnabled,
+} from "./audio";
 import {
   submitScore,
   undoLastThrow,
@@ -8,7 +13,7 @@ import {
   loadCurrentMatch,
 } from "./match";
 import { renderScoreboard, initNumpad } from "./ui";
-import { getStats } from "./stats";
+import { getStats, saveStats } from "./stats";
 
 // Register the PWA service worker for offline support and auto-updates
 registerSW({ immediate: true });
@@ -342,6 +347,21 @@ function handleClockUndo() {
 initClockNumpad(handleClockHit, handleClockMiss, handleClockUndo);
 
 // --- Initialization ---
+
+const stats = getStats();
+setIsMuteEnabled(stats.isMuteEnabled);
+
+const muteToggle = document.getElementById("muteToggle") as HTMLInputElement;
+if (muteToggle) {
+  muteToggle.checked = stats.isMuteEnabled;
+  muteToggle.addEventListener("change", () => {
+    const isMuted = muteToggle.checked;
+    setIsMuteEnabled(isMuted);
+    const updatedStats = getStats();
+    updatedStats.isMuteEnabled = isMuted;
+    saveStats(updatedStats);
+  });
+}
 
 function setViewMode(mode: "501" | "CLOCK") {
   const score501 = document.getElementById("scoreboard-container");
