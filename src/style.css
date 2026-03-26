@@ -1,14 +1,16 @@
 :root {
-  --bg-color: #111827;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent: #4d545c;
-  --accent-rgb: 77, 84, 92;
-  --accent-hover: #64748b;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --success: #10b981;
-  --error: #ef4444;
+  --bg-color: #133153;
+  --text-primary: #f6e9c9;
+  --text-secondary: #c3ced7;
+  --accent: #f6e9c9;
+  --accent-rgb: 246, 233, 201;
+  --accent-hover: #cbd5e1;
+  --glass-bg: rgba(11, 28, 44, 0.4);
+  --glass-border: rgba(195, 206, 215, 0.2);
+  --success: #1b8a48;
+  --error: #d62829;
+  --error-rgb: 214, 40, 41;
+  --silver-rgb: 195, 206, 215;
 }
 
 html {
@@ -17,12 +19,12 @@ html {
   background-image:
     radial-gradient(
       circle at 85% 32%,
-      rgba(77, 84, 92, 0.2) 0%,
+      rgba(11, 28, 44, 0.4) 0%,
       transparent 40%
     ),
     radial-gradient(
       circle at 15% 68%,
-      rgba(100, 116, 139, 0.15) 0%,
+      rgba(11, 28, 44, 0.3) 0%,
       transparent 40%
     );
 }
@@ -85,7 +87,7 @@ header {
 h1 {
   font-size: 1.8rem;
   font-weight: 800;
-  background: linear-gradient(to right, #64748b, #cbd5e1);
+  background: linear-gradient(to right, #c3ced7, #f6e9c9);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -118,8 +120,8 @@ h1 {
 
 .pill-btn.primary {
   background: var(--accent);
-  color: white;
-  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.39);
+  color: var(--bg-color);
+  box-shadow: 0 4px 14px 0 rgba(246, 233, 201, 0.2);
 }
 
 @media (hover: hover) {
@@ -137,12 +139,12 @@ h1 {
 .pill-btn.danger {
   background: var(--error);
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 14px 0 rgba(var(--error-rgb), 0.3);
 }
 
 @media (hover: hover) {
   .pill-btn.danger:hover {
-    background: #dc2626;
+    filter: brightness(0.9);
     transform: translateY(-2px);
   }
 }
@@ -154,16 +156,16 @@ h1 {
 
 .pill-btn.secondary {
   background: var(--glass-bg);
-  color: white;
+  color: var(--text-primary);
   border: 1px solid var(--glass-border);
   font-size: 1.1rem;
 }
 
 @media (hover: hover) {
   .pill-btn.secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--silver-rgb), 0.1);
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(var(--silver-rgb), 0.2);
   }
 }
 
@@ -185,7 +187,7 @@ h1 {
 
 @media (hover: hover) {
   .pill-btn.icon-only:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--silver-rgb), 0.1);
     transform: scale(1.05);
   }
 }
@@ -424,7 +426,7 @@ input:checked + .slider:before {
 
 .toast-icon {
   font-size: 1.5rem;
-  background: rgba(139, 92, 246, 0.2);
+  background: rgba(195, 206, 215, 0.2);
   width: 44px;
   height: 44px;
   display: flex;
@@ -470,9 +472,9 @@ input:checked + .slider:before {
 
 .player-col.active-player {
   opacity: 1;
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(195, 206, 215, 0.1);
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 20px rgba(195, 206, 215, 0.1);
   transform: scale(1.02);
 }
 
@@ -625,13 +627,13 @@ input:checked + .slider:before {
 
 .clock-board {
   background: var(--glass-bg);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--glass-border);
   border-radius: 24px;
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 40px rgba(11, 28, 44, 0.3);
   margin-bottom: 2rem;
 }
 
@@ -648,7 +650,7 @@ input:checked + .slider:before {
   font-weight: 800;
   line-height: 1.1;
   color: var(--accent);
-  text-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+  text-shadow: 0 0 30px rgba(246, 233, 201, 0.2);
 }
 
 .clock-stats {
