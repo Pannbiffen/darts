@@ -455,19 +455,56 @@ input:checked + .slider:before {
 
 /* --- Darts Specific UI --- */
 
+#scoreboard-container,
+#clock-scoreboard-container {
+  width: 100%;
+  max-width: 800px;
+  min-width: 0;
+}
+
 /* Scoreboard Layout */
+.scoreboard-flex-container {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  overflow-x: scroll;
+  overflow-y: visible; /* Prevent cropping scaled elements */
+  position: relative;
+  padding: 1rem 0; /* Add vertical padding for the scale(1.05) */
+  margin: -1rem 0; /* Offset the padding to maintain layout */
+  scroll-snap-type: x mandatory; /* Add native scroll snapping */
+  scroll-behavior: smooth;
+  /* Allow native horizontal scrolling on touch devices */
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+  /* Hide scrollbars for cleaner mobile look */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scoreboard-flex-container::-webkit-scrollbar {
+  display: none;
+}
+.scroll-spacer {
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
 .player-col {
-  flex: 1;
-  background: var(--glass-bg);
+  flex: 0 0 auto;
+  width: clamp(160px, 45vw, 200px);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(10px);
   border-radius: 16px;
-  padding: 1rem 0.5rem;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.3s ease;
+  gap: 1rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.95);
   opacity: 0.6;
+  scroll-snap-align: center; /* Snap cards to center */
 }
 
 .player-col.active-player {

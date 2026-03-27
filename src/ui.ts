@@ -2,6 +2,27 @@ import type { MatchState } from "./match";
 import type { ClockState } from "./clock_match";
 import { playClick } from "./audio";
 
+// Centers the active player column in the scroll container
+function scrollToActivePlayer(
+  container: HTMLElement,
+  /* instant= */ instant: boolean,
+) {
+  const activeCol = container.querySelector(
+    ".active-player",
+  ) as HTMLElement | null;
+  if (!activeCol) return;
+
+  // Center of column should align with center of visible container
+  const scrollTarget =
+    activeCol.offsetLeft -
+    container.offsetWidth / 2 +
+    activeCol.offsetWidth / 2;
+  container.scrollTo({
+    left: scrollTarget,
+    behavior: instant ? "auto" : "smooth",
+  });
+}
+
 // Renders the players' scores, names, averages, and legs/sets
 export function renderScoreboard(state: MatchState) {
   const container = document.getElementById("scoreboard-container");
@@ -13,14 +34,21 @@ export function renderScoreboard(state: MatchState) {
     return;
   }
 
+  const oldFlexBox = container.querySelector(
+    ".scoreboard-flex-container",
+  ) as HTMLElement;
+  const prevScroll = oldFlexBox ? oldFlexBox.scrollLeft : 0;
+  const hasOldFlexBox = !!oldFlexBox;
+
   container.innerHTML = "";
 
   const flexBox = document.createElement("div");
-  // Flex layout dynamically sizes columns based on number of players
-  flexBox.style.display = "flex";
-  flexBox.style.justifyContent = "center";
-  flexBox.style.gap = "1rem";
-  flexBox.style.width = "100%";
+  flexBox.className = "scoreboard-flex-container";
+
+  // --- Leading spacer so first col can scroll to center ---
+  const leadSpacer = document.createElement("div");
+  leadSpacer.className = "scroll-spacer";
+  flexBox.appendChild(leadSpacer);
 
   state.players.forEach((player, idx) => {
     const isCurrent =
@@ -29,7 +57,6 @@ export function renderScoreboard(state: MatchState) {
     const col = document.createElement("div");
     col.className = `player-col ${isCurrent ? "active-player" : ""}`;
 
-    // Using the glassmorphism logic inherited from Pitchle
     col.innerHTML = `
       <div class="player-name">${player.name}</div>
       <div class="player-score">${player.score}</div>
@@ -53,7 +80,43 @@ export function renderScoreboard(state: MatchState) {
     flexBox.appendChild(col);
   });
 
+  // --- Trailing spacer so last col can scroll to center ---
+  const trailSpacer = document.createElement("div");
+  trailSpacer.className = "scroll-spacer";
+  flexBox.appendChild(trailSpacer);
+
   container.appendChild(flexBox);
+
+  // --- Size spacers & scroll AFTER browser has fully laid out ---
+  // setTimeout guarantees layout is complete before we measure and scroll
+  setTimeout(() => {
+    // Only proceed if flexBox is still in the DOM
+    if (!flexBox.isConnected) return;
+
+    const firstCol = flexBox.querySelector(".player-col") as HTMLElement | null;
+    if (!firstCol) return;
+    const colWidth = firstCol.offsetWidth;
+    const containerWidth = container.clientWidth; // use parent for stable viewport width
+    const spacerWidth = Math.max(0, (containerWidth - colWidth) / 2);
+
+    // Use explicit width + minWidth (flexBasis can be unreliable with flex shorthand)
+    leadSpacer.style.width = `${spacerWidth}px`;
+    leadSpacer.style.minWidth = `${spacerWidth}px`;
+    trailSpacer.style.width = `${spacerWidth}px`;
+    trailSpacer.style.minWidth = `${spacerWidth}px`;
+
+    // If we're replacing an existing board, restore its scroll position instantly,
+    // then trigger a smooth scroll to the active player for a buttery transition.
+    if (hasOldFlexBox) {
+      flexBox.scrollTo({ left: prevScroll, behavior: "auto" });
+      requestAnimationFrame(() => {
+        scrollToActivePlayer(flexBox, /* instant= */ false);
+      });
+    } else {
+      // First load: instantly center the player
+      scrollToActivePlayer(flexBox, /* instant= */ true);
+    }
+  }, 50);
 
   if (state.status === "WON") {
     const wName =
@@ -130,18 +193,48 @@ export function renderClockScoreboard(state: ClockState) {
     return;
   }
 
+  const isWon = state.status === "WON";
+  const activePlayer =
+    isWon && state.winnerId
+      ? state.players.find((p) => p.id === state.winnerId) || state.players[0]
+      : state.players[state.currentPlayerIndex] || state.players[0];
+
+  let playersHtml = "";
+  if (state.players.length > 1) {
+    playersHtml = `<div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; width: 100%;">`;
+    state.players.forEach((p, idx) => {
+      const isCurrent =
+        idx === state.currentPlayerIndex && state.status === "PLAYING";
+      const shortName = p.name.replace("Player ", "P");
+      playersHtml += `
+        <div style="background: ${isCurrent ? "rgba(195, 206, 215, 0.2)" : "var(--glass-bg)"}; 
+                    border: 1px solid ${isCurrent ? "var(--accent)" : "var(--glass-border)"}; 
+                    border-radius: 12px; padding: 0.5rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+                    opacity: ${isCurrent ? "1" : "0.5"}; transition: all 0.3s; min-width: 75px; justify-content: center;">
+          <span style="font-size: 0.85rem; font-weight: 800;">${shortName}</span>
+          <span style="font-size: 1.3rem; font-weight: 800; color: ${isCurrent ? "var(--accent)" : "inherit"};">${p.currentTarget > 20 ? "W" : p.currentTarget}</span>
+        </div>
+      `;
+    });
+    playersHtml += `</div>`;
+  }
+
+  let mainTargetText = isWon ? "DONE" : activePlayer.currentTarget.toString();
+  if (activePlayer.currentTarget > 20) mainTargetText = "DONE";
+
   container.innerHTML = `
     <div class="clock-board">
-      <div class="clock-label">CURRENT TARGET</div>
-      <div class="clock-target">${state.status === "WON" ? "DONE" : state.currentTarget}</div>
+      ${playersHtml}
+      <div class="clock-label">${isWon ? activePlayer.name + " WINS!" : state.players.length > 1 ? activePlayer.name + "'S TARGET" : "CURRENT TARGET"}</div>
+      <div class="clock-target">${mainTargetText}</div>
       <div class="clock-stats">
         <div class="stat-row">
-          <span class="stat-lbl">Set #</span>
-          <span class="stat-val">${state.currentSet}</span>
+          <span class="stat-lbl">${state.players.length > 1 ? "Turns" : "Set #"}</span>
+          <span class="stat-val">${activePlayer.currentSet}</span>
         </div>
         <div class="stat-row">
           <span class="stat-lbl">Throws Left</span>
-          <span class="stat-val">${3 - state.dartsThrownInSet}</span>
+          <span class="stat-val">${isWon ? 0 : 3 - activePlayer.dartsThrownInSet}</span>
         </div>
       </div>
     </div>

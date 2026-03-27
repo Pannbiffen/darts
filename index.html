@@ -31,6 +31,24 @@
         </div>
         <div class="header-actions-container">
           <div class="header-actions">
+            <!-- New Game Button -->
+            <button id="newGameBtn" class="pill-btn icon-only" title="New Game">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+            </button>
             <!-- Reuse Pitchle icons for now -->
             <button id="howToPlayBtn" class="pill-btn icon-only" title="Rules">
               <svg
@@ -116,7 +134,141 @@
         <div id="clock-scoreboard-container" class="hidden"></div>
         <div id="clock-numpad-container" class="hidden"></div>
 
-        <!-- How to Play Modal (reused from Pitchle, cleaned out) -->
+        <!-- Game Mode Selection Modal -->
+        <div id="game-mode-modal" class="modal-overlay hidden">
+          <div
+            class="modal-content glass-panel"
+            style="position: relative; width: 380px"
+          >
+            <button class="close-modal icon-only">✕</button>
+            <h2 style="margin-bottom: 0.5rem">New Game</h2>
+
+            <div class="modal-body" style="padding: 0">
+              <div class="player-selector-container">
+                <div
+                  style="
+                    font-size: 0.8rem;
+                    color: var(--text-secondary);
+                    text-transform: uppercase;
+                    font-weight: 600;
+                    margin-bottom: 0.5rem;
+                    letter-spacing: 1px;
+                  "
+                >
+                  Players
+                </div>
+                <div
+                  class="stepper-ui"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 1.5rem;
+                    background: rgba(0, 0, 0, 0.2);
+                    padding: 1rem;
+                    border-radius: 16px;
+                    border: 1px solid var(--glass-border);
+                  "
+                >
+                  <button
+                    id="playerMinusBtn"
+                    class="pill-btn secondary icon-only"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      font-size: 1.5rem;
+                      border-radius: 16px;
+                    "
+                  >
+                    -
+                  </button>
+                  <div
+                    id="playerCountDisplay"
+                    style="font-size: 2.5rem; font-weight: 800; min-width: 40px"
+                  >
+                    1
+                  </div>
+                  <button
+                    id="playerPlusBtn"
+                    class="pill-btn secondary icon-only"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      font-size: 1.5rem;
+                      border-radius: 16px;
+                    "
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="game-modes-grid"
+                style="
+                  margin-top: 1.5rem;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 0.5rem;
+                "
+              >
+                <button
+                  class="pill-btn primary btn-gamemode"
+                  data-mode="ATC"
+                  style="
+                    height: 55px;
+                    font-size: 1.1rem;
+                    width: 100%;
+                    border-radius: 16px;
+                  "
+                >
+                  Around the Clock
+                </button>
+                <button
+                  class="pill-btn secondary btn-gamemode"
+                  data-mode="301"
+                  style="
+                    height: 55px;
+                    font-size: 1.1rem;
+                    width: 100%;
+                    border-radius: 16px;
+                    background: rgba(255, 255, 255, 0.05);
+                  "
+                >
+                  301
+                </button>
+                <button
+                  class="pill-btn secondary btn-gamemode"
+                  data-mode="501"
+                  style="
+                    height: 55px;
+                    font-size: 1.1rem;
+                    width: 100%;
+                    border-radius: 16px;
+                    background: rgba(255, 255, 255, 0.05);
+                  "
+                >
+                  501
+                </button>
+                <button
+                  class="pill-btn secondary btn-gamemode"
+                  data-mode="701"
+                  style="
+                    height: 55px;
+                    font-size: 1.1rem;
+                    width: 100%;
+                    border-radius: 16px;
+                    background: rgba(255, 255, 255, 0.05);
+                  "
+                >
+                  701
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- How to Play Modal -->
         <div id="how-to-play-modal" class="modal-overlay hidden">
           <div
             class="modal-content glass-panel"
@@ -124,20 +276,10 @@
           >
             <button class="close-modal icon-only">✕</button>
             <h2 style="text-align: center; margin-bottom: 1.5rem">
-              Darts Tracker Setup
+              How to Play
             </h2>
-            <div class="modal-body">
-              <p style="margin-bottom: 1rem">
-                Welcome to Darts! Select game mode below.
-              </p>
-
-              <button
-                id="startGameBtn"
-                class="pill-btn primary"
-                style="width: 100%; justify-content: center; height: 50px"
-              >
-                Start 501
-              </button>
+            <div class="modal-body" id="rules-content">
+              <!-- Dynamically populated by main.ts based on game mode -->
             </div>
           </div>
         </div>

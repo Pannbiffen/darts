@@ -7,6 +7,7 @@ import {
   setIsMuteEnabled,
 } from "./audio";
 import {
+  initMatch,
   submitScore,
   undoLastThrow,
   getState,
@@ -19,10 +20,11 @@ import { getStats, saveStats } from "./stats";
 registerSW({ immediate: true });
 
 // Enable :active pseudo-class on iOS Safari
-document.body.addEventListener("touchstart", () => {}, { passive: true });
+document.body.addEventListener("touchstart", () => { }, { passive: true });
 
 // --- Modal System ---
 const modalButtons = [
+  { btnId: "newGameBtn", modalId: "game-mode-modal" },
   { btnId: "howToPlayBtn", modalId: "how-to-play-modal" },
   { btnId: "settingsBtn", modalId: "settings-modal" },
   { btnId: "statsBtn", modalId: "stats-modal" },
@@ -53,16 +55,16 @@ modalButtons.forEach(({ btnId, modalId }) => {
               stats.atcHistory.length === 0
                 ? `<p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2rem;">No games finished yet.</p>`
                 : stats.atcHistory
-                    .slice(-5)
-                    .reverse()
-                    .map((h) => {
-                      const d = new Date(h.date);
-                      return `<div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 4px;">
+                  .slice(-5)
+                  .reverse()
+                  .map((h) => {
+                    const d = new Date(h.date);
+                    return `<div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 4px;">
                             <span>${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                             <span style="font-weight: 800; color: var(--accent);">${h.setsTaken} sets</span>
                           </div>`;
-                    })
-                    .join("");
+                  })
+                  .join("");
 
             globalContainer.innerHTML = `
               <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
@@ -106,6 +108,35 @@ modalButtons.forEach(({ btnId, modalId }) => {
             globalContainer.style.display = "grid";
             globalContainer.style.gridTemplateColumns = "1fr 1fr";
             globalContainer.style.gap = "1rem";
+          }
+        }
+      }
+
+      if (btnId === "howToPlayBtn") {
+        const rulesContent = document.getElementById("rules-content");
+        const isClock = !document
+          .getElementById("clock-scoreboard-container")
+          ?.classList.contains("hidden");
+        if (rulesContent) {
+          if (isClock) {
+            rulesContent.innerHTML = `
+              <p style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent);"><strong>Around the Clock</strong></p>
+              <ul style="padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+                <li style="margin-bottom: 0.75rem">Hit numbers 1 through 20 in numerical order.</li>
+                <li style="margin-bottom: 0.75rem">Singles advance you 1 number, Doubles advance 2, Trebles advance 3.</li>
+                <li style="margin-bottom: 0.75rem">In Multiplayer, each player throws 3 darts per turn.</li>
+              </ul>
+            `;
+          } else {
+            rulesContent.innerHTML = `
+              <p style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent);"><strong>X01 (301, 501, 701)</strong></p>
+              <ul style="padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+                <li style="margin-bottom: 0.75rem">Every player starts at the chosen score.</li>
+                <li style="margin-bottom: 0.75rem">Enter the total score of your 3 darts each turn.</li>
+                <li style="margin-bottom: 0.75rem">You must finish exactly on zero, typically by hitting a "Double" (Double Out).</li>
+                <li style="margin-bottom: 0.75rem">If you exceed the remaining score, or drop to exactly 1, you "bust" and score 0 for that turn.</li>
+              </ul>
+            `;
           }
         }
       }
@@ -400,7 +431,9 @@ function handleClockUndo() {
 }
 
 function handleClockRestart() {
-  initClockMatch();
+  const state = getClockState();
+  const playerNames = state.players.map((p) => p.name);
+  initClockMatch(playerNames.length > 0 ? playerNames : undefined);
   updateClockUI();
 }
 
@@ -453,18 +486,59 @@ function setViewMode(mode: "501" | "CLOCK") {
   }
 }
 
-const startGameBtn = document.getElementById("startGameBtn");
-// Currently defaulting the Start button directly to Around the Clock
-if (startGameBtn) {
-  startGameBtn.textContent = "Start Around the Clock";
-  startGameBtn.addEventListener("click", () => {
+// --- Game Mode Selection Logic ---
+let selectedPlayers = 1;
+const countDisplay = document.getElementById("playerCountDisplay");
+
+document.getElementById("playerMinusBtn")?.addEventListener("click", () => {
+  playClick();
+  if (selectedPlayers > 1) {
+    selectedPlayers--;
+    if (countDisplay) countDisplay.textContent = selectedPlayers.toString();
+  }
+});
+
+document.getElementById("playerPlusBtn")?.addEventListener("click", () => {
+  playClick();
+  if (selectedPlayers < 8) {
+    selectedPlayers++;
+    if (countDisplay) countDisplay.textContent = selectedPlayers.toString();
+  }
+});
+
+document.querySelectorAll(".btn-gamemode").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
     playClick();
-    initClockMatch();
-    setViewMode("CLOCK");
-    document.getElementById("how-to-play-modal")?.classList.add("hidden");
-    updateClockUI();
+    const mode = (e.currentTarget as HTMLButtonElement).dataset.mode;
+
+    // Generate player names
+    const playerNames: string[] = [];
+    if (selectedPlayers === 1) {
+      playerNames.push("Player 1");
+    } else {
+      for (let i = 1; i <= selectedPlayers; i++) {
+        playerNames.push(`Player ${i}`);
+      }
+    }
+
+    if (mode === "ATC") {
+      initClockMatch(playerNames);
+      setViewMode("CLOCK");
+      updateClockUI();
+    } else {
+      const startingScore = parseInt(mode || "501", 10);
+      initMatch(
+        { startingScore, setsToWin: 1, legsToWinSet: 3, doubleOut: true },
+        playerNames,
+      );
+      setViewMode("501");
+      renderScoreboard(getState());
+      updateInputDisplay();
+    }
+
+    document.getElementById("game-mode-modal")?.classList.add("hidden");
   });
-}
+});
 
 // Try loading an existing match on boot (Priority to Clock right now)
 const existingClockMatch = loadCurrentClockMatch();
