@@ -20,7 +20,7 @@ import { getStats, saveStats } from "./stats";
 registerSW({ immediate: true });
 
 // Enable :active pseudo-class on iOS Safari
-document.body.addEventListener("touchstart", () => { }, { passive: true });
+document.body.addEventListener("touchstart", () => {}, { passive: true });
 
 // --- Modal System ---
 const modalButtons = [
@@ -55,16 +55,16 @@ modalButtons.forEach(({ btnId, modalId }) => {
               stats.atcHistory.length === 0
                 ? `<p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2rem;">No games finished yet.</p>`
                 : stats.atcHistory
-                  .slice(-5)
-                  .reverse()
-                  .map((h) => {
-                    const d = new Date(h.date);
-                    return `<div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 4px;">
+                    .slice(-5)
+                    .reverse()
+                    .map((h) => {
+                      const d = new Date(h.date);
+                      return `<div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 4px;">
                             <span>${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                             <span style="font-weight: 800; color: var(--accent);">${h.setsTaken} sets</span>
                           </div>`;
-                  })
-                  .join("");
+                    })
+                    .join("");
 
             globalContainer.innerHTML = `
               <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
