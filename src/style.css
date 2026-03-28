@@ -62,7 +62,7 @@ body {
   max-width: 500px;
   margin: 0 auto;
   width: 100%;
-  padding: 0.75rem 0.75rem 0.5rem;
+  padding: 0.75rem 0.75rem 0; /* Removed bottom padding that was causing the cropping "line" */
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -203,7 +203,8 @@ main {
   flex-direction: column;
   align-items: center;
   position: relative;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Use safe-area-inset-bottom to accommodate iPhone home indicator, with a small 12px fallback for PWA hygiene */
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
 }
 
 #game-message {
