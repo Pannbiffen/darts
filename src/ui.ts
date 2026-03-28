@@ -228,7 +228,7 @@ export function renderClockScoreboard(state: ClockState) {
 
   let playersHtml = "";
   if (state.players.length > 1) {
-    playersHtml = `<div style="display: flex; gap: 0.3rem; justify-content: center; margin-bottom: 0.4rem; flex-wrap: wrap; width: 100%;">`;
+    playersHtml = `<div style="display: flex; gap: 0.4rem; justify-content: center; margin-bottom: 0.75rem; flex-wrap: wrap; width: 100%;">`;
     state.players.forEach((p, idx) => {
       const isCurrent =
         idx === state.currentPlayerIndex && state.status === "PLAYING";
@@ -236,10 +236,10 @@ export function renderClockScoreboard(state: ClockState) {
       playersHtml += `
         <div style="background: ${isCurrent ? "rgba(195, 206, 215, 0.2)" : "var(--glass-bg)"}; 
                     border: 1px solid ${isCurrent ? "var(--accent)" : "var(--glass-border)"}; 
-                    border-radius: 12px; padding: 0.25rem 0.4rem; display: flex; align-items: center; gap: 0.3rem;
-                    opacity: ${isCurrent ? "1" : "0.5"}; transition: all 0.3s; min-width: 60px; justify-content: center;">
-          <span style="font-size: 0.75rem; font-weight: 800;">${shortName}</span>
-          <span style="font-size: 1rem; font-weight: 800; color: ${isCurrent ? "var(--accent)" : "inherit"};">${p.currentTarget > 20 ? "W" : p.currentTarget}</span>
+                    border-radius: 12px; padding: 0.4rem 0.6rem; display: flex; align-items: center; gap: 0.4rem;
+                    opacity: ${isCurrent ? "1" : "0.5"}; transition: all 0.3s; min-width: 65px; justify-content: center;">
+          <span style="font-size: 0.8rem; font-weight: 800;">${shortName}</span>
+          <span style="font-size: 1.1rem; font-weight: 800; color: ${isCurrent ? "var(--accent)" : "inherit"};">${p.currentTarget > 20 ? "W" : p.currentTarget}</span>
         </div>
       `;
     });
@@ -292,8 +292,8 @@ export function initClockNumpad(
       <button id="btn-single" class="action-btn r-success">Single</button>
       <button id="btn-double" class="action-btn r-success">Double</button>
       <button id="btn-treble" class="action-btn r-success">Treble</button>
+      <button id="btn-restart-clock" class="action-btn r-primary hidden">Restart</button>
       <button id="btn-miss" class="action-btn r-error">Miss</button>
-      <button id="btn-restart-clock" class="action-btn r-primary hidden">Start New Game</button>
       <button id="btn-undo" class="action-btn r-error">Undo</button>
     </div>
   `;
