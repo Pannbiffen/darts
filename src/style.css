@@ -62,7 +62,7 @@ body {
   max-width: 500px;
   margin: 0 auto;
   width: 100%;
-  padding: 1rem;
+  padding: 0.75rem 0.75rem 0.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -72,9 +72,9 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: calc(0.4rem + env(safe-area-inset-top, 0px)) 0 0.4rem 0;
+  padding: calc(0.2rem + env(safe-area-inset-top, 0px)) 0 0.2rem 0;
   border-bottom: 1px solid var(--glass-border);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
 }
 
 .header-actions-container {
@@ -90,7 +90,7 @@ header {
 }
 
 h1 {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 800;
   background: linear-gradient(to right, #c3ced7, #f6e9c9);
   background-clip: text;
@@ -106,7 +106,7 @@ h1 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .pill-btn {
@@ -672,45 +672,45 @@ input:checked + .slider:before {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 24px;
-  padding: 1.25rem 1rem;
+  padding: 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   box-shadow: 0 0 40px rgba(11, 28, 44, 0.3);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .clock-label {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: var(--text-secondary);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .clock-target {
-  font-size: clamp(6rem, 20vw, 8rem);
+  font-size: clamp(4rem, 15vw, 6rem);
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1;
   color: var(--accent);
 }
 
 .set-indicator {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--accent);
   opacity: 0.8;
-  letter-spacing: 0.1rem;
-  margin-bottom: -0.2rem;
+  letter-spacing: 0.05rem;
+  margin-bottom: -0.1rem;
 }
 
 .clock-stats {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
   width: 100%;
 }
 
@@ -718,7 +718,7 @@ input:checked + .slider:before {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.2rem;
 }
 
 .clock-stats .stat-lbl {
@@ -740,10 +740,11 @@ input:checked + .slider:before {
 
 .clock-actions-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: auto;
+  gap: 8px;
   margin-top: auto;
-  padding: 0.5rem 0.5rem 0;
+  padding: 0.25rem 0.5rem 0;
   width: 100%;
 }
 
@@ -752,12 +753,12 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: clamp(55px, 9svh, 75px);
-  border-radius: 16px;
+  height: clamp(45px, 7.5svh, 65px);
+  border-radius: 12px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   color: var(--text-primary);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.5px;
   cursor: pointer;
@@ -779,6 +780,14 @@ input:checked + .slider:before {
     background: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
   }
+}
+
+#btn-restart-clock {
+  grid-column: span 3;
+}
+
+#btn-undo {
+  grid-column: 4;
 }
 
 /* Color Coding for Around the Clock Action Buttons */
