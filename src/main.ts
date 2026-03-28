@@ -16,7 +16,6 @@ import {
 import { renderScoreboard, initNumpad } from "./ui";
 import { getStats, saveStats } from "./stats";
 
-
 // Register the PWA service worker for offline support and auto-updates
 registerSW({ immediate: true });
 
@@ -416,9 +415,35 @@ import {
   updateClockActions,
 } from "./ui";
 
-function updateClockUI() {
+let lastClockDartsThrown = 0;
+let clockRefillTimeout: number | null = null;
+
+function updateClockUI(isUndo = false) {
   const state = getClockState();
-  renderClockScoreboard(state);
+  const activePlayer = state.players[state.currentPlayerIndex];
+  const currentDarts = activePlayer?.dartsThrownInSet ?? 0;
+
+  // If a new update comes in while we are waiting for a refill, cancel that timer
+  if (clockRefillTimeout) {
+    clearTimeout(clockRefillTimeout);
+    clockRefillTimeout = null;
+  }
+
+  // Detect turn turnover (2 -> 0)
+  const isTurnOver = !isUndo && currentDarts === 0 && lastClockDartsThrown > 0;
+
+  if (isTurnOver) {
+    // Show 3 dimmed darts first
+    renderClockScoreboard(state, { isRefilling: true });
+
+    // After a short delay, trigger the actual refill animation
+    clockRefillTimeout = window.setTimeout(() => {
+      clockRefillTimeout = null;
+      renderClockScoreboard(state, { isRefilling: false });
+    }, 400);
+  } else {
+    renderClockScoreboard(state, { isUndo });
+  }
 
   if (state.status === "WON") {
     createToast("🎯", "WINNER", "You finished the clock!");
@@ -426,6 +451,7 @@ function updateClockUI() {
   }
 
   updateClockActions(state);
+  lastClockDartsThrown = currentDarts;
 }
 
 function handleClockHit(mult: 1 | 2 | 3) {
@@ -442,7 +468,7 @@ function handleClockMiss(allThree: boolean) {
 
 function handleClockUndo() {
   if (undoClockThrow()) {
-    updateClockUI();
+    updateClockUI(/* isUndo= */ true);
   } else {
     playErrorBuzz();
   }

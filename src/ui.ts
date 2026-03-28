@@ -183,7 +183,8 @@ export function initNumpad(
       if (key === "UNDO") {
         btn.classList.add("action-key", "secondary");
         btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>`;
-        btn.onclick = () => {
+        btn.onpointerdown = (e) => {
+          e.preventDefault();
           playClick();
           onUndo();
         };
@@ -191,13 +192,15 @@ export function initNumpad(
         btn.id = "numpad-enter-btn";
         btn.classList.add("action-key");
         btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>`;
-        btn.onclick = () => {
+        btn.onpointerdown = (e) => {
+          e.preventDefault();
           playClick();
           onSubmit();
         };
       } else {
         btn.textContent = key;
-        btn.onclick = () => {
+        btn.onpointerdown = (e) => {
+          e.preventDefault();
           playClick();
           onNumber(key);
         };
@@ -211,7 +214,10 @@ export function initNumpad(
 
 // --- Around the Clock UI ---
 
-export function renderClockScoreboard(state: ClockState) {
+export function renderClockScoreboard(
+  state: ClockState,
+  /* options= */ options: { isRefilling?: boolean; isUndo?: boolean } = {},
+) {
   const container = document.getElementById("clock-scoreboard-container");
   if (!container) return;
 
@@ -220,6 +226,7 @@ export function renderClockScoreboard(state: ClockState) {
     return;
   }
 
+  const { isRefilling = false, isUndo = false } = options;
   const isWon = state.status === "WON";
   const activePlayer =
     isWon && state.winnerId
@@ -228,13 +235,13 @@ export function renderClockScoreboard(state: ClockState) {
 
   let playersHtml = "";
   if (state.players.length > 1) {
-    playersHtml = `<div style="display: flex; gap: 0.25rem; justify-content: center; margin-bottom: 0.75rem; width: 100%;">`;
+    playersHtml = `<div class="players-grid" style="display: flex; gap: 0.25rem; justify-content: center; margin-bottom: 0.75rem; width: 100%;">`;
     state.players.forEach((p, idx) => {
       const isCurrent =
         idx === state.currentPlayerIndex && state.status === "PLAYING";
       const shortName = p.name.replace("Player ", "P");
       playersHtml += `
-        <div style="background: ${isCurrent ? "rgba(195, 206, 215, 0.2)" : "var(--glass-bg)"}; 
+        <div class="player-pill" style="background: ${isCurrent ? "rgba(195, 206, 215, 0.2)" : "var(--glass-bg)"}; 
                     border: 1px solid ${isCurrent ? "var(--accent)" : "var(--glass-border)"}; 
                     border-radius: 12px; padding: 0.4rem 0.6rem; display: flex; align-items: center; gap: 0.3rem;
                     opacity: ${isCurrent ? "1" : "0.5"}; transition: all 0.3s; min-width: 58px; justify-content: center;">
@@ -249,33 +256,82 @@ export function renderClockScoreboard(state: ClockState) {
   let mainTargetText = isWon ? "DONE" : activePlayer.currentTarget.toString();
   if (activePlayer.currentTarget > 20) mainTargetText = "DONE";
 
-  container.innerHTML = `
-    <div class="clock-board">
-      ${playersHtml}
-      <div class="set-indicator">SET: ${activePlayer.currentSet}</div>
-      <div class="clock-label">${isWon ? activePlayer.name + " WINS!" : state.players.length > 1 ? activePlayer.name + "'S TARGET" : "CURRENT TARGET"}</div>
-      <div class="clock-target">${mainTargetText}</div>
-      <div class="clock-stats">
-        <div class="stat-row">
-          <span class="stat-lbl">DARTS LEFT</span>
-          <div class="dart-indicator-container">
-            ${[0, 1, 2]
-              .map((i) => {
-                const isUsed = 2 - i < activePlayer.dartsThrownInSet;
-                const isActive =
-                  2 - i === activePlayer.dartsThrownInSet && !isWon;
-                return `
-                <svg viewBox="0 0 512 512" fill="currentColor" class="dart-icon ${isUsed ? "used" : ""} ${isActive ? "pulse" : ""}">
+  // Check if we can do an incremental update
+  let board = container.querySelector(".clock-board");
+  if (!board) {
+    // Initial render
+    container.innerHTML = `
+      <div class="clock-board">
+        <div class="players-container">${playersHtml}</div>
+        <div class="set-indicator">SET: ${activePlayer.currentSet}</div>
+        <div class="clock-label">${isWon ? activePlayer.name + " WINS!" : state.players.length > 1 ? activePlayer.name + "'S TARGET" : "CURRENT TARGET"}</div>
+        <div class="clock-target">${mainTargetText}</div>
+        <div class="clock-stats">
+          <div class="stat-row">
+            <span class="stat-lbl">DARTS LEFT</span>
+            <div class="dart-indicator-container">
+              ${[0, 1, 2]
+                .map(
+                  () => `
+                <svg viewBox="0 0 512 512" fill="currentColor" class="dart-icon">
                   <path d="M134.745 22.098c-4.538-.146-9.08 1.43-14.893 7.243-5.586 5.586-11.841 21.725-15.248 35.992-.234.979-.444 1.907-.654 2.836l114.254 105.338c-7.18-28.538-17.555-59.985-29.848-86.75-11.673-25.418-25.249-46.657-37.514-57.024-6.132-5.183-11.56-7.488-16.097-7.635zM92.528 82.122L82.124 92.526 243.58 267.651l24.072-24.072L92.528 82.122zm-24.357 21.826c-.929.21-1.857.42-2.836.654-14.267 3.407-30.406 9.662-35.993 15.248-5.813 5.813-7.39 10.355-7.244 14.893.147 4.538 2.452 9.965 7.635 16.098 10.367 12.265 31.608 25.842 57.025 37.515 26.766 12.293 58.211 22.669 86.749 29.848L68.17 103.948zM280.899 255.79l-25.107 25.107 73.265 79.469 31.31-31.31L280.9 255.79zm92.715 85.476l-32.346 32.344 2.07 2.246c.061.058 4.419 4.224 10.585 6.28 6.208 2.069 12.71 2.88 21.902-6.313 9.192-9.192 8.38-15.694 6.31-21.902-2.057-6.174-6.235-10.54-6.283-10.59l-2.238-2.065zm20.172 41.059a46.23 46.23 0 0 1-5.233 6.226 46.241 46.241 0 0 1-6.226 5.235L489.91 489.91l-96.125-107.586z"/>
                 </svg>
-              `;
-              })
-              .join("")}
+              `,
+                )
+                .join("")}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+    board = container.querySelector(".clock-board")!;
+  }
+
+  // Incremental updates to existing DOM
+  const playersContainer = board.querySelector(".players-container");
+  if (playersContainer) playersContainer.innerHTML = playersHtml;
+
+  const setIndicator = board.querySelector(".set-indicator");
+  if (setIndicator)
+    setIndicator.textContent = `SET: ${activePlayer.currentSet}`;
+
+  const clockLabel = board.querySelector(".clock-label");
+  if (clockLabel)
+    clockLabel.textContent = isWon
+      ? activePlayer.name + " WINS!"
+      : state.players.length > 1
+        ? activePlayer.name + "'S TARGET"
+        : "CURRENT TARGET";
+
+  const clockTarget = board.querySelector(".clock-target");
+  if (clockTarget) clockTarget.textContent = mainTargetText;
+
+  const dartIcons = board.querySelectorAll<SVGElement>(".dart-icon");
+  dartIcons.forEach((icon, i) => {
+    const isUsed = isRefilling || 2 - i < activePlayer.dartsThrownInSet;
+    const isActive =
+      !isRefilling && 2 - i === activePlayer.dartsThrownInSet && !isWon;
+    const isRefillTarget =
+      !isRefilling && !isUndo && activePlayer.dartsThrownInSet === 0;
+    const isNewlyThrown =
+      !isUndo && !isRefilling && 2 - i === activePlayer.dartsThrownInSet - 1;
+
+    // Apply classes for transitions and animations
+    if (isUsed) icon.classList.add("used");
+    else icon.classList.remove("used");
+
+    if (isActive) icon.classList.add("pulse");
+    else icon.classList.remove("pulse");
+
+    if (isRefillTarget) icon.classList.add("refill");
+    else icon.classList.remove("refill");
+
+    if (isUndo) icon.classList.add("instant");
+    else icon.classList.remove("instant");
+
+    if (isNewlyThrown) icon.classList.add("throwing");
+    else icon.classList.remove("throwing");
+  });
 }
 
 export function initClockNumpad(
@@ -298,27 +354,33 @@ export function initClockNumpad(
     </div>
   `;
 
-  document.getElementById("btn-single")!.onclick = () => {
+  document.getElementById("btn-single")!.onpointerdown = (e) => {
+    e.preventDefault();
     playClick();
     onHit(1);
   };
-  document.getElementById("btn-double")!.onclick = () => {
+  document.getElementById("btn-double")!.onpointerdown = (e) => {
+    e.preventDefault();
     playClick();
     onHit(2);
   };
-  document.getElementById("btn-treble")!.onclick = () => {
+  document.getElementById("btn-treble")!.onpointerdown = (e) => {
+    e.preventDefault();
     playClick();
     onHit(3);
   };
-  document.getElementById("btn-miss")!.onclick = () => {
+  document.getElementById("btn-miss")!.onpointerdown = (e) => {
+    e.preventDefault();
     playClick();
     onMiss(false);
   };
-  document.getElementById("btn-undo")!.onclick = () => {
+  document.getElementById("btn-undo")!.onpointerdown = (e) => {
+    e.preventDefault();
     playClick();
     onUndo();
   };
-  document.getElementById("btn-restart-clock")!.onclick = () => {
+  document.getElementById("btn-restart-clock")!.onpointerdown = (e) => {
+    e.preventDefault();
     playClick();
     onRestart();
   };
