@@ -34,6 +34,7 @@ trigger: always_on
 6. **Function Comments**: Use inline comments for function arguments (e.g., `/* isLoad= */ true`) to improve readability and searchability.
 7. **Hover Styles**: All CSS `:hover` rules MUST be wrapped in `@media (hover: hover) { ... }` to prevent "sticky hover" on touch devices. The `:active` pseudo-class does NOT need wrapping.
 8. **Scoreboard Integrity**: When updating game scoreboards (X01 or ATC), perform incremental DOM updates by reusing existing elements where possible. This preserves the horizontal scroll position and ensures smooth, high-frame-rate transitions between players without flickering or "jumps" to the first player.
+9. **Vertical Scroll Lock**: To prevent the unwanted "rubber-band" bounce in standalone PWA mode on iOS, the `body` and `html` elements must be locked to the viewport using `position: fixed` and `overflow: hidden`. Any scrollable content (like the multiplayer scoreboard or modals) must use specific `touch-action` or container-level scroll management.
 
 ## Deployment
 

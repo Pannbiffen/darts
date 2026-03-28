@@ -16,11 +16,29 @@ import {
 import { renderScoreboard, initNumpad } from "./ui";
 import { getStats, saveStats } from "./stats";
 
+
 // Register the PWA service worker for offline support and auto-updates
 registerSW({ immediate: true });
 
 // Enable :active pseudo-class on iOS Safari
 document.body.addEventListener("touchstart", () => {}, { passive: true });
+
+// Prevent vertical bounce in PWA mode on iOS while preserving allowed scroll areas
+document.body.addEventListener(
+  "touchmove",
+  (e) => {
+    const target = e.target as HTMLElement;
+    // Allow horizontal scrolling on scoreboard and vertical scrolling on modal bodies
+    if (
+      target.closest(".scoreboard-flex-container") ||
+      target.closest(".modal-body")
+    ) {
+      return;
+    }
+    e.preventDefault();
+  },
+  { passive: false },
+);
 
 // --- Modal System ---
 const modalButtons = [
