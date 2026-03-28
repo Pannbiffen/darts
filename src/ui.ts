@@ -216,7 +216,11 @@ export function initNumpad(
 
 export function renderClockScoreboard(
   state: ClockState,
-  /* options= */ options: { isRefilling?: boolean; isUndo?: boolean } = {},
+  /* options= */ options: {
+    isRefilling?: boolean;
+    isUndo?: boolean;
+    lastHitType?: number;
+  } = {},
 ) {
   const container = document.getElementById("clock-scoreboard-container");
   if (!container) return;
@@ -226,7 +230,7 @@ export function renderClockScoreboard(
     return;
   }
 
-  const { isRefilling = false, isUndo = false } = options;
+  const { isRefilling = false, isUndo = false, lastHitType } = options;
   const isWon = state.status === "WON";
   const activePlayer =
     isWon && state.winnerId
@@ -291,9 +295,27 @@ export function renderClockScoreboard(
   const playersContainer = board.querySelector(".players-container");
   if (playersContainer) playersContainer.innerHTML = playersHtml;
 
-  const setIndicator = board.querySelector(".set-indicator");
-  if (setIndicator)
-    setIndicator.textContent = `SET: ${activePlayer.currentSet}`;
+  const setIndicator = board.querySelector(
+    ".set-indicator",
+  ) as HTMLElement | null;
+  if (setIndicator) {
+    const oldText = setIndicator.textContent || "";
+    const oldSetMatch = oldText.match(/SET: (\d+)/);
+    const oldSet = oldSetMatch ? parseInt(oldSetMatch[1], 10) : 0;
+    const newSet = activePlayer.currentSet;
+
+    // Detect increase (and isn't the first render where oldSet is 0)
+    if (newSet > oldSet && oldSet > 0) {
+      setIndicator.classList.remove("increased");
+      void setIndicator.offsetWidth; // trigger reflow to restart animation
+      setIndicator.classList.add("increased");
+    } else if (newSet !== oldSet) {
+      // If it changed but didn't increase (e.g. undo), or first render
+      setIndicator.classList.remove("increased");
+    }
+
+    setIndicator.textContent = `SET: ${newSet}`;
+  }
 
   const clockLabel = board.querySelector(".clock-label");
   if (clockLabel)
@@ -303,8 +325,30 @@ export function renderClockScoreboard(
         ? activePlayer.name + "'S TARGET"
         : "CURRENT TARGET";
 
-  const clockTarget = board.querySelector(".clock-target");
-  if (clockTarget) clockTarget.textContent = mainTargetText;
+  const clockTarget = board.querySelector(
+    ".clock-target",
+  ) as HTMLElement | null;
+  if (clockTarget) {
+    const oldTarget = clockTarget.textContent || "";
+    if (oldTarget !== mainTargetText && oldTarget !== "") {
+      if (!isUndo) {
+        // Clear any previous hit classes and trigger fresh animation
+        clockTarget.classList.remove("hit-1", "hit-2", "hit-3");
+        void clockTarget.offsetWidth; // trigger reflow
+
+        // Apply the specific hit class based on multiplier
+        if (lastHitType === 2) clockTarget.classList.add("hit-2");
+        else if (lastHitType === 3) clockTarget.classList.add("hit-3");
+        else clockTarget.classList.add("hit-1");
+      } else {
+        // On Undo, simply remove the classes without re-triggering hit animations
+        clockTarget.classList.remove("hit-1", "hit-2", "hit-3");
+      }
+    }
+    // If oldTarget === mainTargetText, we preserve existing classes
+    // (This prevents the turn-turnover refill from wiping the last-dart animation)
+    clockTarget.textContent = mainTargetText;
+  }
 
   const dartIcons = board.querySelectorAll<SVGElement>(".dart-icon");
   dartIcons.forEach((icon, i) => {

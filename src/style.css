@@ -694,6 +694,76 @@ input:checked + .slider:before {
   font-weight: 800;
   line-height: 1.1;
   color: var(--accent);
+  transition:
+    letter-spacing 0.3s ease,
+    color 0.3s ease;
+}
+
+.clock-target.hit-1 {
+  animation: target-hit-1 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.clock-target.hit-2 {
+  animation: target-hit-2 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.clock-target.hit-3 {
+  animation: target-hit-3 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes target-hit-1 {
+  0% {
+    transform: scale(1);
+    color: var(--accent);
+    letter-spacing: normal;
+  }
+  40% {
+    transform: scale(1.12);
+    color: #f0e7cf;
+    letter-spacing: 0.12rem;
+    text-shadow: 0 0 10px rgba(240, 231, 207, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    color: var(--accent);
+    letter-spacing: normal;
+  }
+}
+
+@keyframes target-hit-2 {
+  0% {
+    transform: scale(1);
+    color: var(--accent);
+    letter-spacing: normal;
+  }
+  40% {
+    transform: scale(1.18);
+    color: #f0e7cf;
+    letter-spacing: 0.2rem;
+    text-shadow: 0 0 15px rgba(240, 231, 207, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    color: var(--accent);
+    letter-spacing: normal;
+  }
+}
+
+@keyframes target-hit-3 {
+  0% {
+    transform: scale(1);
+    color: var(--accent);
+    letter-spacing: normal;
+  }
+  40% {
+    transform: scale(1.4);
+    color: #dfdfdf;
+    letter-spacing: 0.4rem;
+    text-shadow: 0 0 30px rgba(223, 223, 223, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    color: var(--accent);
+    letter-spacing: normal;
+  }
 }
 
 .set-indicator {
@@ -703,6 +773,35 @@ input:checked + .slider:before {
   opacity: 0.8;
   letter-spacing: 0.1rem;
   margin-bottom: -0.2rem;
+  transition:
+    color 0.3s ease,
+    letter-spacing 0.3s ease;
+}
+
+.set-indicator.increased {
+  animation: set-bump 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes set-bump {
+  0% {
+    transform: scale(1);
+    letter-spacing: 0.1rem;
+    color: var(--accent);
+    opacity: 0.8;
+  }
+  40% {
+    transform: scale(1.15);
+    letter-spacing: 0.25rem;
+    color: #fff;
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    letter-spacing: 0.1rem;
+    color: var(--accent);
+    opacity: 0.8;
+  }
 }
 
 .clock-stats {

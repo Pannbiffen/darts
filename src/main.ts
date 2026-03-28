@@ -418,7 +418,7 @@ import {
 let lastClockDartsThrown = 0;
 let clockRefillTimeout: number | null = null;
 
-function updateClockUI(isUndo = false) {
+function updateClockUI(isUndo = false, hitMultiplier?: number) {
   const state = getClockState();
   const activePlayer = state.players[state.currentPlayerIndex];
   const currentDarts = activePlayer?.dartsThrownInSet ?? 0;
@@ -434,15 +434,21 @@ function updateClockUI(isUndo = false) {
 
   if (isTurnOver) {
     // Show 3 dimmed darts first
-    renderClockScoreboard(state, { isRefilling: true });
+    renderClockScoreboard(state, {
+      isRefilling: true,
+      lastHitType: hitMultiplier,
+    });
 
     // After a short delay, trigger the actual refill animation
     clockRefillTimeout = window.setTimeout(() => {
       clockRefillTimeout = null;
-      renderClockScoreboard(state, { isRefilling: false });
+      renderClockScoreboard(state, {
+        isRefilling: false,
+        lastHitType: hitMultiplier,
+      });
     }, 400);
   } else {
-    renderClockScoreboard(state, { isUndo });
+    renderClockScoreboard(state, { isUndo, lastHitType: hitMultiplier });
   }
 
   if (state.status === "WON") {
@@ -457,7 +463,7 @@ function updateClockUI(isUndo = false) {
 function handleClockHit(mult: 1 | 2 | 3) {
   const res = submitClockHit(mult);
   if (res === "GAME_SHOT" || res === "HIT") {
-    updateClockUI();
+    updateClockUI(/* isUndo= */ false, mult);
   }
 }
 
