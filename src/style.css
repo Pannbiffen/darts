@@ -229,8 +229,7 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(8px);
+  background: transparent;
   transition: opacity 0.3s ease;
 }
 
@@ -618,7 +617,7 @@ input:checked + .slider:before {
 .numpad-row {
   display: flex;
   gap: 8px;
-  height: clamp(55px, 9svh, 75px);
+  height: clamp(48px, 8svh, 65px);
 }
 
 .numpad-key {
