@@ -518,7 +518,7 @@ document.getElementById("playerMinusBtn")?.addEventListener("click", () => {
 
 document.getElementById("playerPlusBtn")?.addEventListener("click", () => {
   playClick();
-  if (selectedPlayers < 8) {
+  if (selectedPlayers < 6) {
     selectedPlayers++;
     if (countDisplay) countDisplay.textContent = selectedPlayers.toString();
   }
