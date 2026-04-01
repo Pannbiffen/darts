@@ -389,6 +389,51 @@ input:checked + .slider:before {
   font-weight: 600;
 }
 
+/* ATC Stats - Averages Grid */
+.atc-averages-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+/* ATC Stats - Scrollable History List */
+.atc-history-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.atc-history-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.atc-history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.atc-history-list::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 10px;
+}
+
+@media (hover: hover) {
+  .atc-history-entry:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+}
+
+.atc-history-entry:active {
+  background: rgba(255, 255, 255, 0.18) !important;
+  transform: scale(0.98);
+  transition:
+    transform 0s,
+    background 0s;
+}
+
 /* Toast Notification System */
 #toast-container {
   position: fixed;

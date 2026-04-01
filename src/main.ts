@@ -14,10 +14,20 @@ import {
   loadCurrentMatch,
 } from "./match";
 import { renderScoreboard, initNumpad } from "./ui";
-import { getStats, saveStats } from "./stats";
+import {
+  getStats,
+  saveStats,
+  removeAtcGame,
+  getAtcHistoryForPlayerCount,
+  getAtcBestForPlayerCount,
+  injectTestAtcData,
+} from "./stats";
 
 // Register the PWA service worker for offline support and auto-updates
 registerSW({ immediate: true });
+
+// Expose test helpers on window for console access during development
+(window as any).injectTestAtcData = injectTestAtcData;
 
 // Enable :active pseudo-class on iOS Safari
 document.body.addEventListener("touchstart", () => {}, { passive: true });
@@ -67,38 +77,137 @@ modalButtons.forEach(({ btnId, modalId }) => {
 
         if (globalContainer) {
           if (isClock) {
-            // Render ATC Stats
+            // Determine player count from the current/latest clock game
+            const clockState = getClockState();
+            const atcPlayerCount = clockState.players.length || 1;
+
+            // Render ATC Stats filtered by player count
+            const history = getAtcHistoryForPlayerCount(stats, atcPlayerCount);
+            const best = getAtcBestForPlayerCount(stats, atcPlayerCount);
+
+            // Compute averages
+            const computeAvg = (arr: typeof history) =>
+              arr.length === 0
+                ? null
+                : Math.round(
+                    (arr.reduce((s, h) => s + h.setsTaken, 0) / arr.length) *
+                      10,
+                  ) / 10;
+
+            const now = Date.now();
+            const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+            const ONE_MONTH = 30 * 24 * 60 * 60 * 1000;
+
+            const lifetimeAvg = computeAvg(history);
+            const last10Avg = computeAvg(history.slice(-10));
+            const weekAvg = computeAvg(
+              history.filter((h) => now - h.date < ONE_WEEK),
+            );
+            const monthAvg = computeAvg(
+              history.filter((h) => now - h.date < ONE_MONTH),
+            );
+            const fmtAvg = (v: number | null) =>
+              v === null ? "-" : v.toString();
+
+            // Build context label for the header
+            const modeLabel =
+              atcPlayerCount === 1 ? "Solo" : `${atcPlayerCount}-Player`;
+
+            // History entries in reverse-chronological order
+            // We need real indices into stats.atcHistory for deletion
+            const realIndices: number[] = [];
+            stats.atcHistory.forEach((h, idx) => {
+              if ((h.playerCount ?? 1) === atcPlayerCount) {
+                realIndices.push(idx);
+              }
+            });
+
             let historyHtml =
-              stats.atcHistory.length === 0
-                ? `<p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2rem;">No games finished yet.</p>`
-                : stats.atcHistory
-                    .slice(-5)
+              history.length === 0
+                ? `<p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">No games finished yet.</p>`
+                : [...history]
+                    .map((_, displayIdx) => {
+                      // displayIdx is 0..N-1 in chronological order
+                      return { displayIdx, realIdx: realIndices[displayIdx] };
+                    })
                     .reverse()
-                    .map((h) => {
+                    .map(({ displayIdx, realIdx }) => {
+                      const h = history[displayIdx];
                       const d = new Date(h.date);
-                      return `<div style="display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 4px;">
+                      return `<div class="atc-history-entry" data-atc-idx="${realIdx}" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; padding: 0.5rem 0.6rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 4px; cursor: pointer; transition: background 0.15s;">
                             <span>${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                             <span style="font-weight: 800; color: var(--accent);">${h.setsTaken} sets</span>
                           </div>`;
                     })
                     .join("");
 
+            // Update the modal title with context
+            const statsModalTitle = document
+              .getElementById("stats-modal")
+              ?.querySelector("h2");
+            if (statsModalTitle) {
+              statsModalTitle.textContent = `ATC Stats · ${modeLabel}`;
+            }
+
             globalContainer.innerHTML = `
               <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
-                <div class="stat-item" style="margin-bottom: 1rem;">
-                  <div class="stat-val" style="font-size: 3rem; color: var(--accent);">${stats.bestAtcSets || "-"}</div>
+                <div class="stat-item">
+                  <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">${history.length} game${history.length !== 1 ? "s" : ""} played</div>
+                  <div class="stat-val" style="font-size: 3rem; color: var(--accent);">${best ?? "-"}</div>
                   <div class="stat-label">Personal Best (Sets)</div>
                 </div>
+                <div class="atc-averages-grid">
+                  <div class="stat-item">
+                    <div class="stat-val" style="font-size: 1.5rem;">${fmtAvg(lifetimeAvg)}</div>
+                    <div class="stat-label">Lifetime Avg</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-val" style="font-size: 1.5rem;">${fmtAvg(last10Avg)}</div>
+                    <div class="stat-label">Last 10 Avg</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-val" style="font-size: 1.5rem;">${fmtAvg(weekAvg)}</div>
+                    <div class="stat-label">Past Week</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-val" style="font-size: 1.5rem;">${fmtAvg(monthAvg)}</div>
+                    <div class="stat-label">Past Month</div>
+                  </div>
+                </div>
                 <div>
-                  <h4 style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; text-align: left;">Recent History</h4>
-                  ${historyHtml}
+                  <h4 style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; text-align: left;">History</h4>
+                  <div class="atc-history-list">
+                    ${historyHtml}
+                  </div>
                 </div>
               </div>
             `;
+
+            // Bind delete handlers to history entries
+            globalContainer
+              .querySelectorAll(".atc-history-entry")
+              .forEach((entry) => {
+                entry.addEventListener("click", () => {
+                  const idx = parseInt(
+                    (entry as HTMLElement).dataset.atcIdx || "0",
+                    10,
+                  );
+                  pendingAtcDeleteIdx = idx;
+                  showAtcDeleteConfirm(idx);
+                });
+              });
+
             // Remove grid style temporarily for ATC
             globalContainer.style.display = "block";
           } else {
-            // Render 501 Stats
+            // Render 501 Stats — restore title
+            const statsModalTitle = document
+              .getElementById("stats-modal")
+              ?.querySelector("h2");
+            if (statsModalTitle) {
+              statsModalTitle.textContent = "Lifetime Stats";
+            }
+
             const pct =
               stats.matchesPlayed === 0
                 ? 0
@@ -187,7 +296,30 @@ const cancelResetBtn = document.getElementById("cancelResetBtn");
 const confirmResetBtn = document.getElementById("confirmResetBtn");
 const settingsModal = document.getElementById("settings-modal");
 
-let resetType: "STATS" | "ALL" | null = null;
+let resetType: "STATS" | "ALL" | "ATC_DELETE" | null = null;
+let pendingAtcDeleteIdx: number | null = null;
+
+function showAtcDeleteConfirm(idx: number) {
+  const stats = getStats();
+  const entry = stats.atcHistory[idx];
+  if (!entry || !confirmModal) return;
+
+  resetType = "ATC_DELETE";
+  const title = confirmModal.querySelector("h3");
+  const body = confirmModal.querySelector("p");
+  const actionBtn = confirmModal.querySelector("#confirmResetBtn");
+
+  const d = new Date(entry.date);
+  const dateStr = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+
+  if (title && body && actionBtn) {
+    title.textContent = "Remove Entry?";
+    body.textContent = `Delete the game from ${dateStr} (${entry.setsTaken} sets) from your history?`;
+    actionBtn.textContent = "Remove";
+  }
+
+  confirmModal.classList.remove("hidden");
+}
 
 function showConfirmModal(type: "STATS" | "ALL") {
   resetType = type;
@@ -235,11 +367,21 @@ if (cancelResetBtn) {
     playClick();
     if (confirmModal) confirmModal.classList.add("hidden");
     resetType = null;
+    pendingAtcDeleteIdx = null;
   });
 }
 
 if (confirmResetBtn) {
   confirmResetBtn.addEventListener("click", () => {
+    if (resetType === "ATC_DELETE" && pendingAtcDeleteIdx !== null) {
+      removeAtcGame(pendingAtcDeleteIdx);
+      pendingAtcDeleteIdx = null;
+      resetType = null;
+      if (confirmModal) confirmModal.classList.add("hidden");
+      // Re-trigger the stats modal to refresh the list
+      document.getElementById("statsBtn")?.click();
+      return;
+    }
     if (resetType === "ALL") {
       localStorage.removeItem("darts_lifetime_stats");
       localStorage.removeItem("darts_state");

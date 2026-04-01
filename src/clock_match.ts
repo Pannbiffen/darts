@@ -179,7 +179,7 @@ function handleClockWin(winner: ClockPlayer) {
   state.status = "WON";
   state.winnerId = winner.id;
   if (winner.id === "local_user") {
-    recordAtcGame(winner.currentSet);
+    recordAtcGame(winner.currentSet, /* playerCount= */ state.players.length);
   }
   saveClockState();
 }

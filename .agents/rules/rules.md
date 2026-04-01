@@ -12,9 +12,11 @@ trigger: always_on
 
 - **Match Logic (`src/match.ts` & `src/clock_match.ts`)**:
   - `match.ts` manages the state of a 501 darts match (Sets, Legs, Current Player, Remaining Score). Validates inputs (0-180, bust rules).
-  - `clock_match.ts` manages the "Around the Clock" solo training mode (target progression, set tracking, undo stack).
+  - `clock_match.ts` manages the "Around the Clock" mode for solo and multiplayer (target progression, set tracking, undo stack). Records results tagged with player count.
 - **Statistics (`src/stats.ts`)**:
-  - Persists lifetime stats (matches played, win %, 180s, highest checkout, ATC personal best, ATC history) in `localStorage`.
+  - Persists lifetime stats (matches played, win %, 180s, highest checkout, ATC personal best, ATC history per player count) in `localStorage`.
+  - ATC history entries carry a `playerCount` field (defaults to 1 for backward compatibility). Stats screen filters by the active game's player count.
+  - Supports per-player-count computed averages (lifetime, last 10, past week, past month), individual entry deletion with best-score recalculation, and test data injection via `injectTestAtcData()`.
 - **UI Engine (`src/main.ts`, `src/ui.ts` & `src/style.css`)**:
   - High-performance dark mode with glassmorphism inherited from Pitchle.
   - Responsive design targeting everything down to 420px width for mobile dartboard-side usage.
